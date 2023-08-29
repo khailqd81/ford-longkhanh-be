@@ -6,6 +6,7 @@ const carSchema = new mongoose.Schema({
   type: { type: String, required: true },
   numberSeat: { type: Number },
   fuelType: { type: String },
+  imageUrl: { type: String },
 });
 
 module.exports = mongoose.model("Car", carSchema);

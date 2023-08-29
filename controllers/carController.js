@@ -1,4 +1,5 @@
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 const Car = require("../models/carModel");
 
 exports.findAll = async (req, res, next) => {
@@ -8,11 +9,15 @@ exports.findAll = async (req, res, next) => {
 
 exports.findById = async (req, res, next) => {
   try {
-    const car = await Car.findById(req.params?.id);
-    if (!car) {
-      res.status(404).json({ message: "Car not found" });
+    if (mongoose.isValidObjectId(req.params?.id)) {
+      const car = await Car.findById(req.params?.id);
+      if (!car) {
+        res.status(404).json({ message: "Car not found" });
+      } else {
+        res.json(car);
+      }
     } else {
-      res.json(car);
+      res.status(400).json({ message: "Invalid id parameter" });
     }
   } catch (error) {
     console.log("===> error function findById in carController: ", error);
@@ -33,6 +38,7 @@ exports.add = async (req, res, next) => {
       type: req.body?.type,
       numberSeat: req.body?.numberSeat,
       fuelType: req.body?.fuelType,
+      imageUrl: req.body?.imageUrl,
     });
     const newCar = await car.save();
     res.json(newCar);
@@ -44,10 +50,18 @@ exports.add = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const updatedCar = await Car.findByIdAndUpdate(req.params?.id, req.body, {
-      new: true,
-    });
-    res.json(updatedCar);
+    if (mongoose.isValidObjectId(req.params?.id)) {
+      const updatedCar = await Car.findByIdAndUpdate(req.params?.id, req.body, {
+        new: true,
+      });
+      if (updatedCar) {
+        res.json(updatedCar);
+      } else {
+        res.status(404).json({ message: "Car not found" });
+      }
+    } else {
+      res.status(400).json({ message: "Invalid id parameter" });
+    }
   } catch (error) {
     console.log("===> error function update in carController: ", error);
     res.status(400).json({ message: error.message });
